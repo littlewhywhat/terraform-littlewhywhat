@@ -15,3 +15,8 @@ variable "region" {
   type        = string
   default     = "us-east-1"
 }
+
+variable "agent_hub_ssh_public_key" {
+  description = "SSH public key for agent-hub EC2 access"
+  type        = string
+}
