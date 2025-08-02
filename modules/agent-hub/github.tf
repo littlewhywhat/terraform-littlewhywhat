@@ -27,6 +27,7 @@ resource "aws_iam_user_policy" "github_agent_hub_policy" {
         Action = [
           "codedeploy:CreateDeployment",
           "codedeploy:GetDeployment",
+          "codedeploy:GetDeploymentConfig",
           "codedeploy:RegisterApplicationRevision"
         ],
         Resource = "*"
