@@ -18,3 +18,14 @@ output "agent_hub_ssh_command" {
   description = "SSH command to connect to agent-hub instance"
   value       = "ssh -i /path/to/your/private/key ec2-user@${module.agent_hub.agent_hub_public_ip}"
 }
+
+output "github_access_key_id" {
+  description = "GitHub IAM access key ID"
+  value       = module.agent_hub.github_access_key_id
+}
+
+output "github_secret_access_key" {
+  description = "GitHub IAM secret access key"
+  value       = module.agent_hub.github_secret_access_key
+  sensitive   = true
+}
