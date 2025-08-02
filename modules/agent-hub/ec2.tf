@@ -28,7 +28,9 @@ resource "aws_iam_role_policy" "ec2_codedeploy_policy" {
         ],
         Resource = [
           "arn:aws:s3:::aws-codedeploy-*/*",
-          "arn:aws:s3:::aws-codedeploy-*"
+          "arn:aws:s3:::aws-codedeploy-*",
+          "arn:aws:s3:::agent-hub-artifacts",
+          "arn:aws:s3:::agent-hub-artifacts/*"
         ]
       },
       {
