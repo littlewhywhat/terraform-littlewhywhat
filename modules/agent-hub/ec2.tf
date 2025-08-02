@@ -13,15 +13,5 @@ resource "aws_instance" "agent_hub" {
     Name = "agent-hub"
   }
 
-  user_data = <<-EOF
-              #!/bin/bash
-              yum update -y
-              yum install -y ruby wget python3 git
-              cd /home/ec2-user
-              wget https://aws-codedeploy-us-east-1.s3.us-east-1.amazonaws.com/latest/install
-              chmod +x ./install
-              ./install auto
-              systemctl start codedeploy-agent
-              systemctl enable codedeploy-agent
-              EOF
+  user_data = file("${path.module}/scripts/user-data.sh")
 }
