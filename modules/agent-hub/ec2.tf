@@ -11,7 +11,7 @@ resource "aws_instance" "agent_hub" {
   ami                    = module.backend_deployment.amazon_linux_ami_id
   instance_type          = "t2.micro"
   key_name              = aws_key_pair.agent_hub.key_name
-  vpc_security_group_ids = [module.backend_deployment.backend_web_security_group_id]
+  vpc_security_group_ids = [module.backend_deployment.ec2_service_security_group_id]
 
   tags = {
     Name = "agent-hub"

@@ -3,7 +3,7 @@ output "amazon_linux_ami_id" {
   value       = data.aws_ami.amazon_linux.id
 }
 
-output "backend_web_security_group_id" {
-  description = "ID of the backend web security group"
-  value       = aws_security_group.backend_web.id
+output "ec2_service_security_group_id" {
+  description = "ID of the EC2 service security group"
+  value       = aws_security_group.ec2_service.id
 }

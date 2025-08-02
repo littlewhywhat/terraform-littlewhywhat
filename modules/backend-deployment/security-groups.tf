@@ -1,6 +1,6 @@
-resource "aws_security_group" "backend_web" {
-  name        = "backend-web-sg"
-  description = "Security group for backend web services"
+resource "aws_security_group" "ec2_service" {
+  name        = "ec2-service-sg"
+  description = "Security group for EC2 services"
 
   ingress {
     from_port   = 22
@@ -35,6 +35,6 @@ resource "aws_security_group" "backend_web" {
   }
 
   tags = {
-    Name = "backend-web-sg"
+    Name = "ec2-service-sg"
   }
 }
