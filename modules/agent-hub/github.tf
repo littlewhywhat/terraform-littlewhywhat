@@ -40,3 +40,31 @@ resource "aws_iam_user_policy" "github_agent_hub_policy" {
 resource "aws_iam_access_key" "github_agent_hub_key" {
   user = aws_iam_user.github_agent_hub.name
 }
+
+resource "github_repository" "agent_hub" {
+  name         = "agent-hub"
+  visibility   = "public"
+  
+  has_issues   = true
+  has_wiki     = false
+  has_projects = false
+  
+  allow_merge_commit     = true
+  allow_squash_merge     = true
+  allow_rebase_merge     = true
+  delete_branch_on_merge = true
+}
+
+resource "github_actions_secret" "aws_access_key_id" {
+  repository      = github_repository.agent_hub.name
+  secret_name     = "AWS_ACCESS_KEY_ID"
+  plaintext_value = aws_iam_access_key.github_agent_hub_key.id
+}
+
+resource "github_actions_secret" "aws_secret_access_key" {
+  repository      = github_repository.agent_hub.name
+  secret_name     = "AWS_SECRET_ACCESS_KEY"
+  plaintext_value = aws_iam_access_key.github_agent_hub_key.secret
+}
+
+
