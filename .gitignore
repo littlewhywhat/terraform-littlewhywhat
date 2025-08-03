@@ -1,3 +1,4 @@
+.memories/*
 terraform.tfvars
 .env
 *.tfstate
