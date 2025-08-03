@@ -41,10 +41,9 @@ resource "aws_iam_access_key" "github_agent_hub_key" {
   user = aws_iam_user.github_agent_hub.name
 }
 
-resource "github_repository" "agents_hub" {
-  name         = "agents-hub"
-  description  = "Agent Hub repository for automated deployments"
-  visibility   = "private"
+resource "github_repository" "agent_hub" {
+  name         = "agent-hub"
+  visibility   = "public"
   
   has_issues   = true
   has_wiki     = false
@@ -57,13 +56,13 @@ resource "github_repository" "agents_hub" {
 }
 
 resource "github_actions_secret" "aws_access_key_id" {
-  repository      = github_repository.agents_hub.name
+  repository      = github_repository.agent_hub.name
   secret_name     = "AWS_ACCESS_KEY_ID"
   plaintext_value = aws_iam_access_key.github_agent_hub_key.id
 }
 
 resource "github_actions_secret" "aws_secret_access_key" {
-  repository      = github_repository.agents_hub.name
+  repository      = github_repository.agent_hub.name
   secret_name     = "AWS_SECRET_ACCESS_KEY"
   plaintext_value = aws_iam_access_key.github_agent_hub_key.secret
 }

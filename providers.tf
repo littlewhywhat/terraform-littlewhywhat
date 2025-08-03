@@ -5,7 +5,7 @@ terraform {
       version = "~> 6.7.0"
     }
     github = {
-      source  = "integrations/github"
+      source  = "hashicorp/github"
       version = "~> 6.0"
     }
   }
@@ -19,4 +19,5 @@ provider "aws" {
 
 provider "github" {
   token = var.github_management_token
+  owner = "littlewhywhat"
 }
