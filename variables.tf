@@ -21,8 +21,8 @@ variable "agent_hub_ssh_public_key" {
   type        = string
 }
 
-variable "github_token" {
-  description = "GitHub token for webhook responses"
+variable "agent_hub_webhook_github_token" {
+  description = "GitHub token for agent-hub webhook responses"
   type        = string
   sensitive   = true
 }
