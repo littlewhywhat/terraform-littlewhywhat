@@ -17,3 +17,9 @@ variable "ec2_service_security_group_id" {
   description = "ID of the EC2 service security group"
   type        = string
 }
+
+variable "github_token" {
+  description = "GitHub token for webhook responses"
+  type        = string
+  sensitive   = true
+}

@@ -8,6 +8,7 @@ module "agent_hub" {
   agent_hub_ssh_public_key       = var.agent_hub_ssh_public_key
   amazon_linux_ami_id            = module.ec2_service.amazon_linux_ami_id
   ec2_service_security_group_id  = module.ec2_service.ec2_service_security_group_id
+  github_token                   = var.github_token
 }
 
 module "code-deploy" {
