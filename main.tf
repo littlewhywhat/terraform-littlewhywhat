@@ -25,3 +25,15 @@ output "webhook_github_token_secret_name" {
   description = "Name of the agent-hub webhook GitHub token secret - use this to set the secret value"
   value       = module.agent_hub.webhook_github_token_secret_name
 }
+
+output "agent_hub_webhook_github_token" {
+  description = "Agent hub webhook GitHub token"
+  value       = var.agent_hub_webhook_github_token
+  sensitive   = true
+}
+
+output "github_management_token" {
+  description = "GitHub management token"
+  value       = var.github_management_token
+  sensitive   = true
+}

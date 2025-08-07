@@ -86,4 +86,8 @@ resource "aws_instance" "agent_hub" {
   }
 
   user_data = file("${path.module}/scripts/user-data.sh")
+
+  lifecycle {
+    ignore_changes = [ami]
+  }
 }
