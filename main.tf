@@ -18,7 +18,7 @@ module "code-deploy" {
 
 output "agent_hub_ssh_command" {
   description = "SSH command to connect to agent-hub instance"
-  value       = "ssh -i /path/to/your/private/key ec2-user@${module.agent_hub.agent_hub_public_ip}"
+  value       = "ssh -i ~/.ssh/agent-hub-key ec2-user@${module.agent_hub.agent_hub_public_ip}"
 }
 
 output "webhook_github_token_secret_name" {
