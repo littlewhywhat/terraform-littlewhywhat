@@ -48,5 +48,9 @@ systemctl enable docker
 log "Step 11: Adding ec2-user to docker group"
 usermod -a -G docker ec2-user
 
+log "Step 12: Configuring AWS CLI region for ec2-user"
+REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region 2>/dev/null)
+sudo -u ec2-user aws configure set default.region $REGION
+
 log "=== User-data script completed successfully ==="
 log "Logs are available at: ${LOG_FILE}"
