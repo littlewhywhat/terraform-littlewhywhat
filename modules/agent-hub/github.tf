@@ -67,4 +67,18 @@ resource "github_actions_secret" "aws_secret_access_key" {
   plaintext_value = aws_iam_access_key.github_agent_hub_key.secret
 }
 
+resource "github_repository_webhook" "agent_hub_ping" {
+  repository = github_repository.agent_hub.name
+
+  configuration {
+    url          = "http://${aws_instance.agent_hub.public_ip}:8000/ping"
+    content_type = "json"
+    insecure_ssl = false
+  }
+
+  active = true
+
+  events = ["issue_comment"]
+}
+
 
