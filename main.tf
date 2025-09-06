@@ -6,7 +6,8 @@ module "agent_hub" {
   source = "./modules/agent-hub"
   codedeploy_service_role_arn            = module.code-deploy.codedeploy_role_arn
   agent_hub_ssh_public_key               = var.agent_hub_ssh_public_key
-  amazon_linux_ami_id                    = module.ec2_service.amazon_linux_ami_id
+  # update this to the latest ami id from ec2_service.amazon_linux_ami_id
+  amazon_linux_ami_id                    = "ami-0e2c86481225d3c51"
   ec2_service_security_group_id          = module.ec2_service.ec2_service_security_group_id
   agent_hub_webhook_github_token         = var.agent_hub_webhook_github_token
   github_management_token                = var.github_management_token
