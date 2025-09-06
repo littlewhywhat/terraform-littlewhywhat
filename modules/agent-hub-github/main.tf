@@ -80,5 +80,3 @@ resource "github_repository" "agent_hub" {
 
 #   events = ["issue_comment"]
 # }
-
-
