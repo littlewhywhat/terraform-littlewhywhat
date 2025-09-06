@@ -23,3 +23,8 @@ variable "agent_hub_webhook_github_token" {
   type        = string
   sensitive   = true
 }
+
+variable "github_repository_name" {
+  description = "Name of the GitHub repository"
+  type        = string
+}

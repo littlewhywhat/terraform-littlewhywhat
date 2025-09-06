@@ -40,19 +40,19 @@ resource "aws_iam_access_key" "github_agent_hub_key" {
   user = aws_iam_user.github_agent_hub.name
 }
 resource "github_actions_secret" "aws_access_key_id" {
-  repository      = github_repository.agent_hub.name
+  repository      = var.github_repository_name
   secret_name     = "AWS_ACCESS_KEY_ID"
   plaintext_value = aws_iam_access_key.github_agent_hub_key.id
 }
 
 resource "github_actions_secret" "aws_secret_access_key" {
-  repository      = github_repository.agent_hub.name
+  repository      = var.github_repository_name
   secret_name     = "AWS_SECRET_ACCESS_KEY"
   plaintext_value = aws_iam_access_key.github_agent_hub_key.secret
 }
 
 resource "github_repository_webhook" "agent_hub_ping" {
-  repository = github_repository.agent_hub.name
+  repository = var.github_repository_name
 
   configuration {
     url          = "http://${aws_instance.agent_hub.public_ip}:8000/ping"

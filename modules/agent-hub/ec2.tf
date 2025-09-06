@@ -81,16 +81,16 @@ resource "aws_key_pair" "agent_hub" {
   public_key = var.agent_hub_ssh_public_key
 }
 
-# resource "aws_instance" "agent_hub" {
-#   ami                    = var.amazon_linux_ami_id
-#   instance_type          = "t2.micro"
-#   key_name              = aws_key_pair.agent_hub.key_name
-#   vpc_security_group_ids = [var.ec2_service_security_group_id]
-#   iam_instance_profile   = aws_iam_instance_profile.ec2_codedeploy_profile.name
+resource "aws_instance" "agent_hub" {
+  ami                    = var.amazon_linux_ami_id
+  instance_type          = "t2.micro"
+  key_name              = aws_key_pair.agent_hub.key_name
+  vpc_security_group_ids = [var.ec2_service_security_group_id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_codedeploy_profile.name
 
-#   tags = {
-#     Name = "agent-hub"
-#   }
+  tags = {
+    Name = "agent-hub"
+  }
 
-#   user_data = file("${path.module}/scripts/user-data.sh")
-# }
+  user_data = file("${path.module}/scripts/user-data.sh")
+}
