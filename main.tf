@@ -31,11 +31,11 @@ module "agent_hub_github" {
 #   value       = module.agent_hub.webhook_github_token_secret_name
 # }
 
-output "agent_hub_webhook_github_token" {
-  description = "Agent hub webhook GitHub token"
-  value       = var.agent_hub_webhook_github_token
-  sensitive   = true
-}
+# output "agent_hub_webhook_github_token" {
+#   description = "Agent hub webhook GitHub token"
+#   value       = var.agent_hub_webhook_github_token
+#   sensitive   = true
+# }
 
 output "github_management_token" {
   description = "GitHub management token"
