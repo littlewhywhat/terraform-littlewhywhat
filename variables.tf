@@ -21,3 +21,8 @@ variable "github_management_token" {
   type        = string
   sensitive   = true
 }
+
+variable "demo_k3s_cluster_ssh_public_key" {
+  description = "SSH public key for demo k3s cluster access"
+  type        = string
+}
