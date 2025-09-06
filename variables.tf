@@ -21,14 +21,3 @@ variable "github_management_token" {
   type        = string
   sensitive   = true
 }
-
-# variable "agent_hub_ssh_public_key" {
-#   description = "SSH public key for agent-hub EC2 access"
-#   type        = string
-# }
-
-# variable "agent_hub_webhook_github_token" {
-#   description = "GitHub token for agent-hub webhook responses"
-#   type        = string
-#   sensitive   = true
-# }
