@@ -3,7 +3,7 @@ variable "demo_k3s_cluster_ssh_public_key" {
   type        = string
 }
 
-variable "amazon_linux_ami_id" {
-  description = "ID of the Amazon Linux AMI"
+variable "ubuntu_ami_id" {
+  description = "ID of the Ubuntu AMI"
   type        = string
 }

@@ -5,5 +5,5 @@ output "public_ip" {
 
 output "ssh_command" {
   description = "SSH command to connect to the demo k3s cluster"
-  value       = "ssh -i ~/.ssh/demo-k3s-cluster-key ec2-user@${aws_instance.demo_k3s_cluster.public_ip}"
+  value       = "ssh -i ~/.ssh/demo-k3s-cluster-key ubuntu@${aws_instance.demo_k3s_cluster.public_ip}"
 }

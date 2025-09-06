@@ -10,10 +10,11 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
 }
 
-log "=== Starting k3s user-data script ==="
+log "=== Starting k3s user-data script (Ubuntu) ==="
 
 log "Step 1: Updating system packages"
-yum update -y
+apt-get update
+apt-get upgrade -y
 
 log "Step 2: Installing k3s"
 curl -sfL https://get.k3s.io | sh -
@@ -24,17 +25,17 @@ systemctl start k3s
 log "Step 4: Enabling k3s to start on boot"
 systemctl enable k3s
 
-log "Step 5: Setting up kubeconfig permissions for ec2-user"
+log "Step 5: Setting up kubeconfig permissions for ubuntu user"
 chmod 644 /etc/rancher/k3s/k3s.yaml
 
-log "Step 6: Creating .kube directory for ec2-user"
-mkdir -p /home/ec2-user/.kube
+log "Step 6: Creating .kube directory for ubuntu user"
+mkdir -p /home/ubuntu/.kube
 
-log "Step 7: Copying kubeconfig to ec2-user home"
-cp /etc/rancher/k3s/k3s.yaml /home/ec2-user/.kube/config
+log "Step 7: Copying kubeconfig to ubuntu user home"
+cp /etc/rancher/k3s/k3s.yaml /home/ubuntu/.kube/config
 
 log "Step 8: Setting ownership of kubeconfig"
-chown ec2-user:ec2-user /home/ec2-user/.kube/config
+chown ubuntu:ubuntu /home/ubuntu/.kube/config
 
 log "Step 9: Waiting for k3s to be ready"
 sleep 30

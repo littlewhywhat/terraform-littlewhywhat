@@ -4,7 +4,7 @@ resource "aws_key_pair" "demo_k3s_cluster" {
 }
 
 resource "aws_instance" "demo_k3s_cluster" {
-  ami                    = var.amazon_linux_ami_id
+  ami                    = var.ubuntu_ami_id
   instance_type          = "t3.small"
   key_name              = aws_key_pair.demo_k3s_cluster.key_name
   vpc_security_group_ids = [aws_security_group.demo_k3s_cluster.id]
