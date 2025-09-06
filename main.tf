@@ -8,8 +8,6 @@ module "code-deploy" {
 
 module "agent_hub_github" {
   source = "./modules/agent-hub-github"
-  github_management_token                = var.github_management_token
-  agent_hub_webhook_github_token         = var.agent_hub_webhook_github_token
 }
 
 # module "agent_hub" {
@@ -19,6 +17,7 @@ module "agent_hub_github" {
 #   # update this to the latest ami id from ec2_service.amazon_linux_ami_id
 #   amazon_linux_ami_id                    = "ami-0e2c86481225d3c51"
 #   ec2_service_security_group_id          = module.ec2_service.ec2_service_security_group_id
+#   agent_hub_webhook_github_token         = var.agent_hub_webhook_github_token
 # }
 
 # output "agent_hub_ssh_command" {
