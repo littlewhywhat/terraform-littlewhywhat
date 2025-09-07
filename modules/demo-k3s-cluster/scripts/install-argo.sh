@@ -58,12 +58,13 @@ kubectl rollout status deployment/argo-server -n argo --timeout=300s
 
 log "Step 7: Setting up admin user and token"
 if kubectl get serviceaccount argo-admin -n argo >/dev/null 2>&1; then
-    log "Admin user already exists, recreating to ensure fresh RBAC..."
-    kubectl delete serviceaccount argo-admin -n argo
+    log "Admin user already exists, skipping recreation"
+    # kubectl delete serviceaccount argo-admin -n argo  # Commented out - may be needed in future
+else
+    log "Creating admin user..."
+    kubectl create serviceaccount argo-admin -n argo
+    sleep 2
 fi
-log "Creating admin user..."
-kubectl create serviceaccount argo-admin -n argo
-sleep 2
 
 log "Setting up RBAC for admin user and argo-server..."
 cat <<EOF | kubectl apply -f -
@@ -152,10 +153,14 @@ subjects:
   namespace: argo
 EOF
 
-log "Generating admin token..."
-ADMIN_TOKEN=$(kubectl create token argo-admin -n argo --duration=8760h)
-echo "Bearer $ADMIN_TOKEN" > /tmp/argo-admin-token.txt
-log "Admin token saved to /tmp/argo-admin-token.txt"
+if [ -f "/tmp/argo-admin-token.txt" ]; then
+    log "Admin token already exists, skipping token generation"
+else
+    log "Generating admin token..."
+    ADMIN_TOKEN=$(kubectl create token argo-admin -n argo --duration=8760h)
+    echo "Bearer $ADMIN_TOKEN" > /tmp/argo-admin-token.txt
+    log "Admin token saved to /tmp/argo-admin-token.txt"
+fi
 
 log "Step 8: Setting up RBAC permissions for workflows"
 if kubectl get serviceaccount argo-workflow -n argo >/dev/null 2>&1; then
@@ -297,51 +302,45 @@ EOF
 fi
 
 log "Step 12: Installing Argo Events"
-if kubectl get deployment eventbus-controller -n argo >/dev/null 2>&1; then
+if kubectl get deployment controller-manager -n argo-events >/dev/null 2>&1; then
     log "Argo Events already installed, skipping installation"
 else
+    log "Creating argo-events namespace..."
+    kubectl create namespace argo-events 2>/dev/null || echo "Namespace argo-events already exists"
     log "Installing Argo Events..."
-    kubectl apply -n argo -f https://github.com/argoproj/argo-events/releases/download/v1.9.1/install.yaml
-    kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo-events/v1.9.1/examples/eventbus/native.yaml
+    # Install Argo Events in its own namespace (argo-events) as intended
+    kubectl apply -f https://github.com/argoproj/argo-events/releases/download/v1.9.1/install.yaml
 fi
 
-log "Step 13: Waiting for Argo Events pods to be ready"
-kubectl wait --for=condition=available deployment/eventbus-controller -n argo --timeout=300s
-kubectl wait --for=condition=available deployment/eventsource-controller -n argo --timeout=300s  
-kubectl wait --for=condition=available deployment/sensor-controller -n argo --timeout=300s
+log "Step 13: Creating EventBus in argo namespace for our workflows"
+kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo-events/v1.9.1/examples/eventbus/native.yaml
 
-log "Step 14: Setting up RBAC for Argo Events"
+log "Step 14: Waiting for Argo Events controller to be ready"
+kubectl wait --for=condition=available deployment/controller-manager -n argo-events --timeout=300s
+
+log "Step 15: Setting up cross-namespace RBAC for Argo Events to trigger workflows in argo namespace"
 cat <<EOF | kubectl apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: argo-events-cluster-role
+  name: argo-events-workflow-trigger
 rules:
-- apiGroups: [""]
-  resources: ["events", "configmaps"]
-  verbs: ["create", "get", "list", "watch", "update", "patch"]
-- apiGroups: [""]
-  resources: ["pods", "services"]
-  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 - apiGroups: ["argoproj.io"]
-  resources: ["workflows", "workflowtemplates", "eventsources", "sensors"]
-  verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
-- apiGroups: ["apps"]
-  resources: ["deployments"]
-  verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+  resources: ["workflows"]
+  verbs: ["create", "get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: argo-events-binding
+  name: argo-events-workflow-trigger-binding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: argo-events-cluster-role
+  name: argo-events-workflow-trigger
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: argo
+  namespace: argo-events
 EOF
 
 log "=== Argo Workflows & Events installation completed successfully ==="
