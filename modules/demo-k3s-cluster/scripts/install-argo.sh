@@ -63,7 +63,7 @@ else
     kubectl create serviceaccount argo-admin -n argo
 fi
 
-log "Setting up RBAC for admin user..."
+log "Setting up RBAC for admin user and argo-server..."
 cat <<EOF | kubectl apply -f -
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -82,6 +82,9 @@ rules:
 - apiGroups: ["networking.k8s.io"]
   resources: ["*"]
   verbs: ["*"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["*"]
+  verbs: ["*"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -97,36 +100,50 @@ subjects:
   namespace: argo
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
-  name: argo-server-role
-  namespace: argo
+  name: argo-server-cluster-role
 rules:
 - apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["get", "list"]
+  resources: ["configmaps", "events"]
+  verbs: ["get", "watch", "list"]
 - apiGroups: [""]
   resources: ["pods", "pods/exec", "pods/log"]
+  verbs: ["get", "list", "watch", "delete"]
+- apiGroups: [""]
+  resources: ["secrets"]
   verbs: ["get", "list", "watch"]
 - apiGroups: [""]
-  resources: ["events"]
-  verbs: ["watch", "create", "patch"]
-- apiGroups: [""]
   resources: ["serviceaccounts"]
-  verbs: ["get", "list"]
+  verbs: ["get", "list", "watch"]
 - apiGroups: ["argoproj.io"]
-  resources: ["workflows", "workflowtemplates", "cronworkflows", "clusterworkflowtemplates"]
+  resources: ["workflows", "workflowtemplates", "cronworkflows", "clusterworkflowtemplates", "workflowtaskresults", "workflowtasksets"]
   verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["serviceaccounts/token"]
+  verbs: ["create"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
+kind: ClusterRoleBinding
 metadata:
-  name: argo-admin-server-binding
-  namespace: argo
+  name: argo-server-binding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: argo-server-role
+  kind: ClusterRole
+  name: argo-server-cluster-role
+subjects:
+- kind: ServiceAccount
+  name: argo-server
+  namespace: argo
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argo-admin-to-server-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argo-server-cluster-role
 subjects:
 - kind: ServiceAccount
   name: argo-admin
