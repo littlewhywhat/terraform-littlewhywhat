@@ -14,3 +14,8 @@ output "demo_k3s_cluster_public_ip" {
   description = "Public IP of demo k3s cluster"
   value       = module.demo_k3s_cluster.public_ip
 }
+
+output "argo_workflows_ui" {
+  description = "URL to access Argo Workflows UI in browser"
+  value       = module.demo_k3s_cluster.argo_ui_url
+}
