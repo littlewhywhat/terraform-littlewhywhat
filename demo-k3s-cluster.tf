@@ -3,6 +3,13 @@ module "demo_k3s_cluster" {
   
   demo_k3s_cluster_ssh_public_key = var.demo_k3s_cluster_ssh_public_key
   ubuntu_ami_id                   = module.ec2_service.ubuntu_ami_id
+  
+  demo_coding_agent_gitlab_token          = var.demo_coding_agent_gitlab_token
+  demo_coding_agent_gitlab_webhook_secret = var.demo_coding_agent_gitlab_webhook_secret
+  demo_coding_agent_cursor_token          = var.demo_coding_agent_cursor_token
+  demo_coding_agent_gitlab_project_id     = var.demo_coding_agent_gitlab_project_id
+  demo_coding_agent_gitlab_username       = var.demo_coding_agent_gitlab_username
+  demo_coding_agent_gitlab_email          = var.demo_coding_agent_gitlab_email
 }
 
 output "demo_k3s_cluster_ssh_command" {

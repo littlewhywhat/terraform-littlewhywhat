@@ -296,7 +296,55 @@ spec:
 EOF
 fi
 
-log "=== Argo Workflows installation completed successfully ==="
+log "Step 12: Installing Argo Events"
+if kubectl get deployment eventbus-controller -n argo >/dev/null 2>&1; then
+    log "Argo Events already installed, skipping installation"
+else
+    log "Installing Argo Events..."
+    kubectl apply -n argo -f https://github.com/argoproj/argo-events/releases/download/v1.9.1/install.yaml
+    kubectl apply -n argo -f https://raw.githubusercontent.com/argoproj/argo-events/v1.9.1/examples/eventbus/native.yaml
+fi
+
+log "Step 13: Waiting for Argo Events pods to be ready"
+kubectl wait --for=condition=available deployment/eventbus-controller -n argo --timeout=300s
+kubectl wait --for=condition=available deployment/eventsource-controller -n argo --timeout=300s  
+kubectl wait --for=condition=available deployment/sensor-controller -n argo --timeout=300s
+
+log "Step 14: Setting up RBAC for Argo Events"
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: argo-events-cluster-role
+rules:
+- apiGroups: [""]
+  resources: ["events", "configmaps"]
+  verbs: ["create", "get", "list", "watch", "update", "patch"]
+- apiGroups: [""]
+  resources: ["pods", "services"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: ["argoproj.io"]
+  resources: ["workflows", "workflowtemplates", "eventsources", "sensors"]
+  verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argo-events-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argo-events-cluster-role
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: argo
+EOF
+
+log "=== Argo Workflows & Events installation completed successfully ==="
 log "Access Argo UI at: http://argo.$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4).nip.io"
 log ""
 log "=== LOGIN INFORMATION ==="
@@ -311,3 +359,4 @@ log "=== Available Tools ==="
 log "- kubectl: Standard Kubernetes CLI"
 log "- k9s: Terminal-based Kubernetes UI (just run 'k9s')"
 log "- Argo UI: Web-based workflow management (requires token login)"
+log "- Argo Events: Event-driven workflow automation"
