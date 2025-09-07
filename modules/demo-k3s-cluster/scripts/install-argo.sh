@@ -52,16 +52,18 @@ else
     kubectl patch deployment argo-server -n argo --patch '{"spec":{"template":{"spec":{"containers":[{"name":"argo-server","args":["server","--auth-mode=client","--secure=false"]}]}}}}'
 fi
 
-log "Step 6: Waiting for deployment to be ready"
+log "Step 6: Restarting and waiting for deployment to be ready"
+kubectl rollout restart deployment/argo-server -n argo
 kubectl rollout status deployment/argo-server -n argo --timeout=300s
 
 log "Step 7: Setting up admin user and token"
 if kubectl get serviceaccount argo-admin -n argo >/dev/null 2>&1; then
-    log "Admin user already exists, checking bindings..."
-else
-    log "Creating admin user..."
-    kubectl create serviceaccount argo-admin -n argo
+    log "Admin user already exists, recreating to ensure fresh RBAC..."
+    kubectl delete serviceaccount argo-admin -n argo
 fi
+log "Creating admin user..."
+kubectl create serviceaccount argo-admin -n argo
+sleep 2
 
 log "Setting up RBAC for admin user and argo-server..."
 cat <<EOF | kubectl apply -f -
