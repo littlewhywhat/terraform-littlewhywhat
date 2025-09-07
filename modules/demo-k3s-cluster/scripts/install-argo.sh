@@ -27,8 +27,8 @@ log "Step 4: Waiting for Argo Workflows pods to be ready"
 kubectl wait --for=condition=available deployment/argo-server -n argo --timeout=300s
 kubectl wait --for=condition=available deployment/workflow-controller -n argo --timeout=300s
 
-log "Step 5: Configuring Argo server for no-auth mode"
-kubectl patch deployment argo-server -n argo --patch '{"spec":{"template":{"spec":{"containers":[{"name":"argo-server","args":["server","--auth-mode=server","--secure=false"]}]}}}}'
+log "Step 5: Configuring Argo server for no-auth mode and HTTP readiness probe"
+kubectl patch deployment argo-server -n argo --patch '{"spec":{"template":{"spec":{"containers":[{"name":"argo-server","args":["server","--auth-mode=server","--secure=false"],"readinessProbe":{"httpGet":{"scheme":"HTTP","path":"/","port":2746}}}]}}}}'
 
 log "Step 6: Waiting for patched deployment to be ready"
 kubectl rollout status deployment/argo-server -n argo --timeout=300s
