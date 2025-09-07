@@ -10,7 +10,9 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
 }
 
+# Use ubuntu user's kubeconfig instead of root's
 export KUBECONFIG=/home/ubuntu/.kube/config
+
 log "=== Starting Argo Workflows installation ==="
 
 log "Step 1: Checking if k3s is ready"
@@ -39,12 +41,15 @@ kubectl wait --for=condition=available deployment/argo-server -n argo --timeout=
 kubectl wait --for=condition=available deployment/workflow-controller -n argo --timeout=300s
 
 log "Step 5: Configuring Argo server for token-based auth"
-# Check if already configured for token auth
-if kubectl get deployment argo-server -n argo -o jsonpath='{.spec.template.spec.containers[0].args}' | grep -q "auth-mode=server"; then
-    log "Argo server already configured for token auth"
+CURRENT_ARGS=$(kubectl get deployment argo-server -n argo -o jsonpath='{.spec.template.spec.containers[0].args}')
+if echo "$CURRENT_ARGS" | grep -q "auth-mode=client" && echo "$CURRENT_ARGS" | grep -q "secure=false"; then
+    log "Argo server already configured for HTTP + token auth"
+elif echo "$CURRENT_ARGS" | grep -q "auth-mode=client"; then
+    log "Found HTTPS token config, switching to HTTP + token auth..."
+    kubectl patch deployment argo-server -n argo --patch '{"spec":{"template":{"spec":{"containers":[{"name":"argo-server","args":["server","--auth-mode=client","--secure=false"]}]}}}}'
 else
-    log "Patching Argo server for token-based authentication..."
-    kubectl patch deployment argo-server -n argo --patch '{"spec":{"template":{"spec":{"containers":[{"name":"argo-server","args":["server","--auth-mode=server"]}]}}}}'
+    log "Patching Argo server for HTTP + token-based authentication..."
+    kubectl patch deployment argo-server -n argo --patch '{"spec":{"template":{"spec":{"containers":[{"name":"argo-server","args":["server","--auth-mode=client","--secure=false"]}]}}}}'
 fi
 
 log "Step 6: Waiting for deployment to be ready"
@@ -52,12 +57,81 @@ kubectl rollout status deployment/argo-server -n argo --timeout=300s
 
 log "Step 7: Setting up admin user and token"
 if kubectl get serviceaccount argo-admin -n argo >/dev/null 2>&1; then
-    log "Admin user already exists, regenerating token..."
+    log "Admin user already exists, checking bindings..."
 else
     log "Creating admin user..."
     kubectl create serviceaccount argo-admin -n argo
-    kubectl create clusterrolebinding argo-admin --clusterrole=admin --serviceaccount=argo:argo-admin
 fi
+
+log "Setting up RBAC for admin user..."
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: argo-admin-cluster-role
+rules:
+- apiGroups: [""]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["apps"]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["argoproj.io"]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["*"]
+  verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argo-admin-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argo-admin-cluster-role
+subjects:
+- kind: ServiceAccount
+  name: argo-admin
+  namespace: argo
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: argo-server-role
+  namespace: argo
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["pods", "pods/exec", "pods/log"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["watch", "create", "patch"]
+- apiGroups: [""]
+  resources: ["serviceaccounts"]
+  verbs: ["get", "list"]
+- apiGroups: ["argoproj.io"]
+  resources: ["workflows", "workflowtemplates", "cronworkflows", "clusterworkflowtemplates"]
+  verbs: ["create", "get", "list", "watch", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: argo-admin-server-binding
+  namespace: argo
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: argo-server-role
+subjects:
+- kind: ServiceAccount
+  name: argo-admin
+  namespace: argo
+EOF
 
 log "Generating admin token..."
 ADMIN_TOKEN=$(kubectl create token argo-admin -n argo --duration=8760h)
@@ -111,11 +185,44 @@ subjects:
 EOF
 fi
 
-log "Step 9: Creating ingress for Argo UI"
+log "Step 9: Creating/updating ingress for Argo UI"
+CURRENT_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+EXPECTED_HOST="argo.${CURRENT_IP}.nip.io"
+
 if kubectl get ingress argo-server -n argo >/dev/null 2>&1; then
-    log "Ingress already exists, skipping creation"
+    # Ingress exists, check if it has the correct IP
+    INGRESS_HOST=$(kubectl get ingress argo-server -n argo -o jsonpath='{.spec.rules[0].host}')
+    if [ "$INGRESS_HOST" = "$EXPECTED_HOST" ]; then
+        log "Ingress already exists with correct IP ($CURRENT_IP), skipping update"
+    else
+        log "Ingress exists but has wrong IP (expected: $EXPECTED_HOST, found: $INGRESS_HOST)"
+        log "Updating ingress with current IP..."
+        kubectl delete ingress argo-server -n argo
+        log "Creating new ingress for Argo UI with IP $CURRENT_IP..."
+        cat <<EOF | kubectl apply -f -
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argo-server
+  namespace: argo
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+  - host: ${EXPECTED_HOST}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: argo-server
+            port:
+              number: 2746
+EOF
+    fi
 else
-    log "Creating ingress for Argo UI..."
+    log "Creating new ingress for Argo UI with IP $CURRENT_IP..."
     cat <<EOF | kubectl apply -f -
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -126,7 +233,7 @@ metadata:
     traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
   rules:
-  - host: argo.$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4).nip.io
+  - host: ${EXPECTED_HOST}
     http:
       paths:
       - path: /
@@ -138,6 +245,8 @@ spec:
               number: 2746
 EOF
 fi
+
+log "Ingress configured for: http://${EXPECTED_HOST}"
 
 log "Step 10: Verifying installation"
 kubectl get pods -n argo
