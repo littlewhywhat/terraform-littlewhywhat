@@ -1,6 +1,6 @@
 module "demo_k3s_cluster" {
   source = "./modules/demo-k3s-cluster"
-
+  
   demo_k3s_cluster_ssh_public_key = var.demo_k3s_cluster_ssh_public_key
   ubuntu_ami_id                   = module.ec2_service.ubuntu_ami_id
 }
@@ -18,4 +18,10 @@ output "demo_k3s_cluster_public_ip" {
 output "argo_workflows_ui" {
   description = "URL to access Argo Workflows UI in browser"
   value       = module.demo_k3s_cluster.argo_ui_url
+}
+
+output "argo_admin_token" {
+  description = "Admin token for Argo Workflows UI - copy this to login"
+  value       = module.demo_k3s_cluster.argo_admin_token
+  sensitive   = true
 }
