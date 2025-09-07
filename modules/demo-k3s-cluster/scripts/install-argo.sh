@@ -154,7 +154,7 @@ EOF
 
 log "Generating admin token..."
 ADMIN_TOKEN=$(kubectl create token argo-admin -n argo --duration=8760h)
-echo "$ADMIN_TOKEN" > /tmp/argo-admin-token.txt
+echo "Bearer $ADMIN_TOKEN" > /tmp/argo-admin-token.txt
 log "Admin token saved to /tmp/argo-admin-token.txt"
 
 log "Step 8: Setting up RBAC permissions for workflows"
