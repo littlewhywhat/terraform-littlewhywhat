@@ -18,6 +18,14 @@ resource "aws_security_group" "demo_k3s_cluster" {
     description = "Kubernetes API server"
   }
 
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "HTTP access for Traefik ingress"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
