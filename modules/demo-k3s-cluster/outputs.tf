@@ -13,3 +13,10 @@ output "argo_ui_url" {
   value       = "http://argo.${aws_instance.demo_k3s_cluster.public_ip}.nip.io"
   depends_on  = [null_resource.install_argo]
 }
+
+output "argo_admin_token" {
+  description = "Admin token for Argo Workflows UI login"
+  value       = try(file("/tmp/argo-admin-token.txt"), "Token not yet generated - run terraform apply")
+  depends_on  = [null_resource.install_argo]
+  sensitive   = true
+}

@@ -55,6 +55,8 @@ cp /etc/rancher/k3s/k3s.yaml /home/ubuntu/.kube/config
 log "Step 9: Setting ownership of kubeconfig"
 chown ubuntu:ubuntu /home/ubuntu/.kube/config
 
+export KUBECONFIG=/home/ubuntu/.kube/config
+
 log "Step 10: Waiting for k3s to be ready"
 sleep 30
 

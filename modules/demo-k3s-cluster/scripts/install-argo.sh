@@ -10,9 +10,9 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
 }
 
+export KUBECONFIG=/home/ubuntu/.kube/config
 log "=== Starting Argo Workflows installation ==="
 
-# Wait for k3s to be fully ready
 log "Step 1: Checking if k3s is ready"
 if kubectl wait --for=condition=ready nodes --all --timeout=5s >/dev/null 2>&1; then
     log "k3s is already ready, proceeding..."
@@ -38,19 +38,33 @@ log "Step 4: Waiting for Argo Workflows pods to be ready"
 kubectl wait --for=condition=available deployment/argo-server -n argo --timeout=300s
 kubectl wait --for=condition=available deployment/workflow-controller -n argo --timeout=300s
 
-log "Step 5: Configuring Argo server for no-auth mode and HTTP readiness probe"
-# Check if already patched by looking for insecure args
-if kubectl get deployment argo-server -n argo -o jsonpath='{.spec.template.spec.containers[0].args}' | grep -q "secure=false"; then
-    log "Argo server already configured for no-auth mode"
+log "Step 5: Configuring Argo server for token-based auth"
+# Check if already configured for token auth
+if kubectl get deployment argo-server -n argo -o jsonpath='{.spec.template.spec.containers[0].args}' | grep -q "auth-mode=server"; then
+    log "Argo server already configured for token auth"
 else
-    log "Patching Argo server for no-auth mode..."
-    kubectl patch deployment argo-server -n argo --patch '{"spec":{"template":{"spec":{"containers":[{"name":"argo-server","args":["server","--auth-mode=server","--secure=false"],"readinessProbe":{"httpGet":{"scheme":"HTTP","path":"/","port":2746}}}]}}}}'
+    log "Patching Argo server for token-based authentication..."
+    kubectl patch deployment argo-server -n argo --patch '{"spec":{"template":{"spec":{"containers":[{"name":"argo-server","args":["server","--auth-mode=server"]}]}}}}'
 fi
 
 log "Step 6: Waiting for deployment to be ready"
 kubectl rollout status deployment/argo-server -n argo --timeout=300s
 
-log "Step 7: Setting up RBAC permissions for workflows"
+log "Step 7: Setting up admin user and token"
+if kubectl get serviceaccount argo-admin -n argo >/dev/null 2>&1; then
+    log "Admin user already exists, regenerating token..."
+else
+    log "Creating admin user..."
+    kubectl create serviceaccount argo-admin -n argo
+    kubectl create clusterrolebinding argo-admin --clusterrole=admin --serviceaccount=argo:argo-admin
+fi
+
+log "Generating admin token..."
+ADMIN_TOKEN=$(kubectl create token argo-admin -n argo --duration=8760h)
+echo "$ADMIN_TOKEN" > /tmp/argo-admin-token.txt
+log "Admin token saved to /tmp/argo-admin-token.txt"
+
+log "Step 8: Setting up RBAC permissions for workflows"
 if kubectl get serviceaccount argo-workflow -n argo >/dev/null 2>&1; then
     log "RBAC already configured, skipping setup"
 else
@@ -97,7 +111,7 @@ subjects:
 EOF
 fi
 
-log "Step 8: Creating ingress for Argo UI"
+log "Step 9: Creating ingress for Argo UI"
 if kubectl get ingress argo-server -n argo >/dev/null 2>&1; then
     log "Ingress already exists, skipping creation"
 else
@@ -125,12 +139,12 @@ spec:
 EOF
 fi
 
-log "Step 9: Verifying installation"
+log "Step 10: Verifying installation"
 kubectl get pods -n argo
 kubectl get svc -n argo
 kubectl get ingress -n argo
 
-log "Step 10: Creating test workflow (if none exist)"
+log "Step 11: Creating test workflow (if none exist)"
 # Check if any workflows exist (completed or running)
 if kubectl get workflows -n argo 2>/dev/null | grep -q hello-world; then
     log "Test workflows already exist, skipping creation"
@@ -156,10 +170,16 @@ fi
 
 log "=== Argo Workflows installation completed successfully ==="
 log "Access Argo UI at: http://argo.$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4).nip.io"
+log ""
+log "=== LOGIN INFORMATION ==="
+log "Authentication: Token-based"
+log "Username: argo-admin"
+log "Token saved at: /tmp/argo-admin-token.txt"
+log ""
 log "Installation logs are available at: ${LOG_FILE}"
 log "You can view logs with: cat ${LOG_FILE}"
 log ""
 log "=== Available Tools ==="
 log "- kubectl: Standard Kubernetes CLI"
 log "- k9s: Terminal-based Kubernetes UI (just run 'k9s')"
-log "- Argo UI: Web-based workflow management"
+log "- Argo UI: Web-based workflow management (requires token login)"
