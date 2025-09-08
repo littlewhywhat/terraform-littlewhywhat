@@ -1,3 +1,12 @@
+module "argo_configs" {
+  source = "./modules/argo-configs"
+}
+
+output "argo_configs_github_repository_name" {
+  description = "Name of the GitHub repository"
+  value       = module.argo_configs.github_repository_name
+}
+
 module "demo_k3s_cluster" {
   source = "./modules/demo-k3s-cluster"
   
