@@ -40,3 +40,15 @@ variable "demo_coding_agent_gitlab_email" {
   description = "GitLab email for demo coding agent container registry"
   type        = string
 }
+
+variable "demo_coding_agent_slack_app_token" {
+  description = "Slack app token for demo coding agent socket mode"
+  type        = string
+  sensitive   = true
+}
+
+variable "demo_coding_agent_slack_bot_token" {
+  description = "Slack bot token for demo coding agent"
+  type        = string
+  sensitive   = true
+}
