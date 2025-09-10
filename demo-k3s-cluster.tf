@@ -19,6 +19,8 @@ module "demo_k3s_cluster" {
   demo_coding_agent_gitlab_project_id     = var.demo_coding_agent_gitlab_project_id
   demo_coding_agent_gitlab_username       = var.demo_coding_agent_gitlab_username
   demo_coding_agent_gitlab_email          = var.demo_coding_agent_gitlab_email
+  demo_coding_agent_slack_app_token       = var.demo_coding_agent_slack_app_token
+  demo_coding_agent_slack_bot_token       = var.demo_coding_agent_slack_bot_token
 }
 
 output "demo_k3s_cluster_ssh_command" {
