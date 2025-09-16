@@ -11,7 +11,7 @@ module "demo_k3s_cluster" {
   source = "./modules/demo-k3s-cluster"
   
   demo_k3s_cluster_ssh_public_key = var.demo_k3s_cluster_ssh_public_key
-  ubuntu_ami_id                   = module.ec2_service.ubuntu_ami_id
+  ubuntu_ami_id                   = "ami-0bbdd8c17ed981ef9"
   
   demo_coding_agent_gitlab_token          = var.demo_coding_agent_gitlab_token
   demo_coding_agent_gitlab_webhook_secret = var.demo_coding_agent_gitlab_webhook_secret
