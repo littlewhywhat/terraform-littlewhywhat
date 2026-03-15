@@ -1,6 +1,6 @@
 resource "github_repository" "sidethreadgpt" {
   name         = "sidethreadgpt"
-  visibility   = "private"
+  visibility   = "public"
   
   has_issues   = true
   has_wiki     = false

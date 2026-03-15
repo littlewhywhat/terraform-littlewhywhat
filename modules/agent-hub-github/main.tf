@@ -1,6 +1,6 @@
 resource "github_repository" "agent_hub" {
   name         = "agent-hub"
-  visibility   = "public"
+  visibility   = "private"
   
   has_issues   = true
   has_wiki     = false
