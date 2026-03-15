@@ -10,30 +10,25 @@ resource "aws_glue_catalog_table" "pings" {
   parameters = {
     "classification"            = "parquet"
     "projection.enabled"        = "true"
-    "projection.year.type"      = "integer"
-    "projection.year.range"     = "2025,2030"
-    "projection.month.type"     = "integer"
-    "projection.month.range"    = "1,12"
-    "projection.month.digits"   = "2"
-    "projection.day.type"       = "integer"
-    "projection.day.range"      = "1,31"
-    "projection.day.digits"     = "2"
+    "projection.year.type"      = "injected"
+    "projection.month.type"     = "injected"
+    "projection.day.type"       = "injected"
     "storage.location.template" = "s3://${aws_s3_bucket.pings.id}/pings/year=$${year}/month=$${month}/day=$${day}/"
   }
 
   partition_keys {
     name = "year"
-    type = "int"
+    type = "string"
   }
 
   partition_keys {
     name = "month"
-    type = "int"
+    type = "string"
   }
 
   partition_keys {
     name = "day"
-    type = "int"
+    type = "string"
   }
 
   storage_descriptor {
@@ -60,6 +55,26 @@ resource "aws_glue_catalog_table" "pings" {
     }
 
     columns {
+      name = "current_version"
+      type = "string"
+    }
+
+    columns {
+      name = "timestamp"
+      type = "bigint"
+    }
+
+    columns {
+      name = "event_type"
+      type = "string"
+    }
+
+    columns {
+      name = "received_at"
+      type = "bigint"
+    }
+
+    columns {
       name = "installed_at"
       type = "bigint"
     }
@@ -76,11 +91,6 @@ resource "aws_glue_catalog_table" "pings" {
 
     columns {
       name = "updated_version"
-      type = "string"
-    }
-
-    columns {
-      name = "current_version"
       type = "string"
     }
 
@@ -136,6 +146,36 @@ resource "aws_glue_catalog_table" "pings" {
 
     columns {
       name = "language"
+      type = "string"
+    }
+
+    columns {
+      name = "bot_risk_webdriver"
+      type = "boolean"
+    }
+
+    columns {
+      name = "bot_risk_headless"
+      type = "boolean"
+    }
+
+    columns {
+      name = "bot_risk_install_to_ping_fast"
+      type = "boolean"
+    }
+
+    columns {
+      name = "bot_risk_uptime_suspicious"
+      type = "boolean"
+    }
+
+    columns {
+      name = "action"
+      type = "string"
+    }
+
+    columns {
+      name = "action_data"
       type = "string"
     }
   }
