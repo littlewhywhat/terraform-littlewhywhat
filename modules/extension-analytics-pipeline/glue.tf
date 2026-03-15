@@ -45,11 +45,6 @@ resource "aws_glue_catalog_table" "pings" {
     }
 
     columns {
-      name = "project_token"
-      type = "string"
-    }
-
-    columns {
       name = "uuid"
       type = "string"
     }
