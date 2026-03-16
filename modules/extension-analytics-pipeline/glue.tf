@@ -173,5 +173,10 @@ resource "aws_glue_catalog_table" "extension-events" {
       name = "action_data"
       type = "string"
     }
+
+    columns {
+      name = "env"
+      type = "string"
+    }
   }
 }
