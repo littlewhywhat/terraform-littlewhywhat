@@ -2,9 +2,9 @@ resource "aws_glue_catalog_database" "analytics" {
   name = "extension_analytics"
 }
 
-resource "aws_glue_catalog_table" "pings" {
+resource "aws_glue_catalog_table" "extension-events" {
   database_name = aws_glue_catalog_database.analytics.name
-  name          = "pings"
+  name          = "extension-events"
   table_type    = "EXTERNAL_TABLE"
 
   parameters = {
@@ -13,7 +13,7 @@ resource "aws_glue_catalog_table" "pings" {
     "projection.year.type"      = "injected"
     "projection.month.type"     = "injected"
     "projection.day.type"       = "injected"
-    "storage.location.template" = "s3://${aws_s3_bucket.pings.id}/pings/year=$${year}/month=$${month}/day=$${day}/"
+    "storage.location.template" = "s3://${aws_s3_bucket.extension-events.id}/events/year=$${year}/month=$${month}/day=$${day}/"
   }
 
   partition_keys {
@@ -32,7 +32,7 @@ resource "aws_glue_catalog_table" "pings" {
   }
 
   storage_descriptor {
-    location      = "s3://${aws_s3_bucket.pings.id}/pings/"
+    location      = "s3://${aws_s3_bucket.extension-events.id}/events/"
     input_format  = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat"
     output_format = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat"
 
