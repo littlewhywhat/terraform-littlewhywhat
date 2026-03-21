@@ -1,7 +1,7 @@
 data "aws_caller_identity" "current" {}
 
 resource "aws_iam_role" "firehose" {
-  name = "extension-events-firehose"
+  name = "${var.name_prefix}-events-firehose"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -16,7 +16,7 @@ resource "aws_iam_role" "firehose" {
 }
 
 resource "aws_iam_role_policy" "firehose" {
-  name = "extension-events-firehose"
+  name = "${var.name_prefix}-events-firehose"
   role = aws_iam_role.firehose.id
 
   policy = jsonencode({
@@ -51,30 +51,5 @@ resource "aws_iam_role_policy" "firehose" {
         ]
       }
     ]
-  })
-}
-
-resource "aws_iam_user" "analytics_service_writer" {
-  name = "extension-analytics-service-writer"
-}
-
-resource "aws_iam_access_key" "analytics_service_writer" {
-  user = aws_iam_user.analytics_service_writer.name
-}
-
-resource "aws_iam_user_policy" "analytics_service_writer" {
-  name = "extension-analytics-firehose-put"
-  user = aws_iam_user.analytics_service_writer.name
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = [
-        "firehose:PutRecord",
-        "firehose:PutRecordBatch"
-      ]
-      Resource = aws_kinesis_firehose_delivery_stream.extension-events-firehose.arn
-    }]
   })
 }

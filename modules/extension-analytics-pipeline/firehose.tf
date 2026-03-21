@@ -1,5 +1,5 @@
 resource "aws_kinesis_firehose_delivery_stream" "extension-events-firehose" {
-  name        = "extension-events-firehose"
+  name        = "${var.name_prefix}-events-firehose"
   destination = "extended_s3"
 
   extended_s3_configuration {
