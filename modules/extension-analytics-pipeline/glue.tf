@@ -1,10 +1,10 @@
 resource "aws_glue_catalog_database" "analytics" {
-  name = "extension_analytics"
+  name = "${var.name_prefix}_analytics"
 }
 
 resource "aws_glue_catalog_table" "extension-events" {
   database_name = aws_glue_catalog_database.analytics.name
-  name          = "extension-events"
+  name          = "${var.name_prefix}-events"
   table_type    = "EXTERNAL_TABLE"
 
   parameters = {

@@ -1,5 +1,5 @@
 resource "aws_codedeploy_app" "agent_hub" {
-  name = "agent-hub-app"
+  name             = "agent-hub-app"
   compute_platform = "Server"
 }
 

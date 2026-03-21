@@ -9,10 +9,10 @@ output "argo_configs_github_repository_name" {
 
 # module "demo_k3s_cluster" {
 #   source = "./modules/demo-k3s-cluster"
-  
+
 #   demo_k3s_cluster_ssh_public_key = var.demo_k3s_cluster_ssh_public_key
 #   ubuntu_ami_id                   = "ami-0bbdd8c17ed981ef9"
-  
+
 #   demo_coding_agent_gitlab_token          = var.demo_coding_agent_gitlab_token
 #   demo_coding_agent_gitlab_webhook_secret = var.demo_coding_agent_gitlab_webhook_secret
 #   demo_coding_agent_cursor_token          = var.demo_coding_agent_cursor_token
@@ -44,6 +44,6 @@ output "argo_workflows_ui" {
 output "argo_admin_token" {
   description = "Admin token for Argo Workflows UI - copy this to login"
   # value       = module.demo_k3s_cluster.argo_admin_token
-  value = "disabled"
-  sensitive   = true
+  value     = "disabled"
+  sensitive = true
 }

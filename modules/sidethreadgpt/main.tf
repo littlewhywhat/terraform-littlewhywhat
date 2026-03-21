@@ -1,11 +1,11 @@
 resource "github_repository" "sidethreadgpt" {
-  name         = "sidethreadgpt"
-  visibility   = "public"
-  
+  name       = "sidethreadgpt"
+  visibility = "public"
+
   has_issues   = true
   has_wiki     = false
   has_projects = false
-  
+
   allow_merge_commit     = true
   allow_squash_merge     = true
   allow_rebase_merge     = true
