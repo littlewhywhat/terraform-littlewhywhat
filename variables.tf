@@ -71,3 +71,15 @@ variable "demo_coding_agent_slack_bot_token" {
   type        = string
   sensitive   = true
 }
+
+variable "mongodbatlas_client_id" {
+  description = "MongoDB Atlas service account client ID"
+  type        = string
+  sensitive   = true
+}
+
+variable "mongodbatlas_client_secret" {
+  description = "MongoDB Atlas service account client secret"
+  type        = string
+  sensitive   = true
+}
