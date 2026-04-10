@@ -16,7 +16,20 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 2.0"
     }
+    mongodbatlas = {
+      source  = "mongodb/mongodbatlas"
+      version = "~> 2.9"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
+    }
   }
+}
+
+provider "mongodbatlas" {
+  client_id     = var.mongodbatlas_client_id
+  client_secret = var.mongodbatlas_client_secret
 }
 
 provider "aws" {
