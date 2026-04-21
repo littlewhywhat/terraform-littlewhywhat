@@ -49,11 +49,7 @@ resource "mongodbatlas_database_user" "this" {
 output "connection_strings" {
   value = {
     for env in ["staging", "production"] :
-    env => {
-      username          = mongodbatlas_database_user.this[env].username
-      password          = random_password.this[env].result
-      connection_string = var.connection_string
-    }
+    env => "${replace(var.connection_string, "mongodb+srv://", "mongodb+srv://${mongodbatlas_database_user.this[env].username}:${random_password.this[env].result}@")}/telegram-bot-${env}"
   }
   sensitive = true
 }
